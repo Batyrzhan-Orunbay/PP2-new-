@@ -1,0 +1,10 @@
+file1.txt
+file2.txt
+document.pdf
+image.png
+script.py
+folder1
+folder2
+project
+notes.txt
+README.mds
