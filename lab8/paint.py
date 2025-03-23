@@ -1,86 +1,90 @@
-import pygame
+import pygame as pg  # Pygame кітапханасын импорттаймыз
 
-# Инициализация Pygame
-pygame.init()
+# Pygame-ді инициализациялау (іске қосу)
+pg.init()
 
-# Устанавливаем размеры окна
+# Ойын терезесінің өлшемдері
 WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Paint на Pygame")
+screen = pg.display.set_mode((WIDTH, HEIGHT))  # Терезені орнату
+pg.display.set_caption("Pygame Paint")  # Терезенің атауын орнату
 
-# Цвета
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+# Түстерді анықтау (RGB форматында)
+WHITE = (255, 255, 255)  # Ақ
+BLACK = (0, 0, 0)  # Қара
+RED = (255, 0, 0)  # Қызыл
+BLUE = (0, 0, 255)  # Көк
+GREEN = (0, 255, 0)  # Жасыл
 
-# Текущий цвет рисования
+# Әдепкі (бастапқы) сызу түсі – қара
 current_color = BLACK
 
-# Переменные для режима рисования
-drawing = False
-mode = "pen"  # pen, rect, circle, eraser
-start_pos = None  # Начальная точка для фигур
+# Айнымалылар – сызу режимін сақтау үшін
+drawing = False  # Сурет салып жатырмыз ба?
+mode = "pen"  # Әдепкі режим – "қалам" (pen), басқа режимдер: rect, circle, eraser
+start_pos = None  # Фигуралар үшін бастапқы координата
+last_pos = None  # Қаламмен үздіксіз сызу үшін соңғы координата
 
-# Основной цикл программы
+# Бағдарламаның негізгі циклі
 running = True
-screen.fill(WHITE)  # Заполняем экран белым цветом
+screen.fill(WHITE)  # Экранды ақ түспен бояу (таза күйде бастау)
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for event in pg.event.get():  # Оқиғаларды өңдеу (мысалы, тінтуір басу)
+        if event.type == pg.QUIT:  # Егер қолданушы "жабу" батырмасын басса
             running = False
 
-        # Обработка нажатий клавиш для смены режима
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_r:
-                mode = "rect"  # Прямоугольник
-            elif event.key == pygame.K_c:
-                mode = "circle"  # Круг
-            elif event.key == pygame.K_e:
-                mode = "eraser"  # Ластик
-            elif event.key == pygame.K_p:
-                mode = "pen"  # Карандаш
-            elif event.key == pygame.K_1:
-                current_color = BLACK  # Чёрный
-            elif event.key == pygame.K_2:
-                current_color = RED  # Красный
-            elif event.key == pygame.K_3:
-                current_color = BLUE  # Синий
-            elif event.key == pygame.K_4:
-                current_color = GREEN  # Зелёный
+        # Пернетақтадағы батырмаларға жауап беру
+        elif event.type == pg.KEYDOWN:
+            if event.key == pg.K_r:
+                mode = "rect"  # Тікбұрыш сызу режимі
+            elif event.key == pg.K_c:
+                mode = "circle"  # Шеңбер сызу режимі
+            elif event.key == pg.K_e:
+                mode = "eraser"  # Өшіргіш режимі
+            elif event.key == pg.K_p:
+                mode = "pen"  # Қалам (сызық) режимі
+            elif event.key == pg.K_1:
+                current_color = BLACK  # Қара түсті таңдау
+            elif event.key == pg.K_2:
+                current_color = RED  # Қызыл түсті таңдау
+            elif event.key == pg.K_3:
+                current_color = BLUE  # Көк түсті таңдау
+            elif event.key == pg.K_4:
+                current_color = GREEN  # Жасыл түсті таңдау
 
-        # Начало рисования (нажатие ЛКМ)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Левая кнопка мыши
-                drawing = True
-                start_pos = event.pos  # Запоминаем начальную позицию
+        # Егер тінтуірдің сол жақ батырмасы басылса – сурет сала бастаймыз
+        elif event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Сол жақ батырма
+                drawing = True  # Сурет сала бастадық
+                start_pos = event.pos  # Бастапқы координатаны есте сақтау
+                last_pos = event.pos  # Соңғы координатаны есте сақтау (қалам үшін)
 
-        # Рисование (движение мыши с зажатой кнопкой)
-        elif event.type == pygame.MOUSEMOTION:
-            if drawing:
-                if mode == "pen":
-                    pygame.draw.line(screen, current_color, event.pos, event.pos, 5)
-                elif mode == "eraser":
-                    pygame.draw.circle(screen, WHITE, event.pos, 10)
+        # Егер тінтуір қозғалып жатса
+        elif event.type == pg.MOUSEMOTION:
+            if drawing:  # Егер сызу режимі қосулы болса
+                if mode == "pen" and last_pos:  # Егер қалам режимі болса
+                    pg.draw.line(screen, current_color, last_pos, event.pos, 5)  # Соңғы және жаңа нүкте арасында сызық сызу
+                    last_pos = event.pos  # Соңғы координатаны жаңарту
+                elif mode == "eraser":  # Егер өшіргіш режимі болса
+                    pg.draw.circle(screen, WHITE, event.pos, 10)  # Ақ түспен дөңгелек жасау (өшіргіш)
 
-        # Завершение рисования (отпускание ЛКМ)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
-                drawing = False
-                end_pos = event.pos  # Конечная точка
+        # Егер тінтуір батырмасы жіберілсе – сызуды аяқтаймыз
+        elif event.type == pg.MOUSEBUTTONUP:
+            if event.button == 1:  # Сол жақ батырма
+                drawing = False  # Сызуды тоқтату
+                end_pos = event.pos  # Соңғы координатаны сақтау
                 
-                # Рисуем прямоугольник
+                # Егер тікбұрыш режимінде болсақ – тікбұрыш салу
                 if mode == "rect" and start_pos:
-                    rect = pygame.Rect(start_pos, (end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]))
-                    pygame.draw.rect(screen, current_color, rect, 2)
+                    rect = pg.Rect(start_pos, (end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]))
+                    pg.draw.rect(screen, current_color, rect, 2)
 
-                # Рисуем круг
+                # Егер шеңбер режимінде болсақ – шеңбер салу
                 elif mode == "circle" and start_pos:
-                    radius = int(((end_pos[0] - start_pos[0]) ** 2 + (end_pos[1] - start_pos[1]) ** 2) ** 0.5)
-                    pygame.draw.circle(screen, current_color, start_pos, radius, 2)
+                    radius = int(((end_pos[0] - start_pos[0]) ** 2 + (end_pos[1] - start_pos[1]) ** 2) ** 0.5)  # Радиус есептеу
+                    pg.draw.circle(screen, current_color, start_pos, radius, 2)
 
-    # Обновление экрана
-    pygame.display.flip()
+    # Экранды жаңарту (барлық өзгерістерді көрсету)
+    pg.display.flip()
 
-pygame.quit()
+# Pygame-ді жабу
+pg.quit()
