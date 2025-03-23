@@ -1,98 +1,82 @@
-import pygame
+import pygame as pg
 import random
 
-# Initialize pygame
-pygame.init()
+pg.init()
 
-# Constants
-WIDTH, HEIGHT = 600, 400
-CELL_SIZE = 20
-WHITE, GREEN, RED, BLUE, BLACK = (255, 255, 255), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 0, 0)
-FPS = 10  # Initial speed
+width, height = 600, 400 # терезенің өлшемдері
+cellsize = 20 # жыланмен тамақтың 1 сегмент өлшемі
+white, green, red, blue, black = (255, 255, 255), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 0, 0) # қолданылған түстер ргб форматта
+fps = 10 # жыланның бастапқы жылдамдығы
 
-# Create game window
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Snake Game")
+screen = pg.display.set_mode((width, height)) # терезені құрамыз
+pg.display.set_caption("Snake Game") # терезеге ат береміз
 
-# Fonts
-font = pygame.font.Font(None, 30)
+font = pg.font.Font(None, 30) #счетпен уровен шрифт
 
-# Snake setup
-snake = [(100, 100), (90, 100), (80, 100)]  # Initial snake position
-snake_dir = (CELL_SIZE, 0)  # Moving right
-food = (200, 200)
-speed = FPS
-score = 0
-level = 1
+snake = [(100, 100), (90, 100), (80, 100)] # жыланның бастапқы орны
+snake_dir = (cellsize, 0) # оң жақа қарай қозғалып бастайды
+food = (200, 200) # тамақтың бастапқы позициясы
+speed = fps # ағымдағы жылдамдығы
+score = 0 # өзіне счет сақтайды
+level = 1 # өзіне уровен сақтайды
 
-# Generate random food position
-
-def generate_food():
+def generate_food(): # тамақты генерация жасайтын функция
     while True:
-        x = random.randint(0, (WIDTH // CELL_SIZE) - 1) * CELL_SIZE
-        y = random.randint(0, (HEIGHT // CELL_SIZE) - 1) * CELL_SIZE
-        if (x, y) not in snake:  # Ensure food is not on snake
+        x = random.randint(0, (width // cellsize) - 1) * cellsize # х үшін кездейсоқ координаттарды жасайды
+        y = random.randint(0, (height // cellsize) - 1) * cellsize # у үшін кездейсоқ координаттарды жасайды
+        if (x, y) not in snake: # тамақтың жыланның үстіне түспеуін тексереді
             return (x, y)
 
 food = generate_food()
 
-running = True
-clock = pygame.time.Clock()
+running = True # ойынның флагы
+clock = pg.time.Clock() # фпс реттейді
 
-while running:
-    screen.fill(BLACK)
-    
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+while running: # басты ойын циклы
+    screen.fill(black) # әр кадр алдында экранды қараға тазалап отырады
+
+    for event in pg.event.get(): # жыланның қозғалысының 
+        if event.type == pg.QUIT: # х басқанда ойынды жауып тастайды
             running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and snake_dir != (0, CELL_SIZE):
-                snake_dir = (0, -CELL_SIZE)
-            elif event.key == pygame.K_DOWN and snake_dir != (0, -CELL_SIZE):
-                snake_dir = (0, CELL_SIZE)
-            elif event.key == pygame.K_LEFT and snake_dir != (CELL_SIZE, 0):
-                snake_dir = (-CELL_SIZE, 0)
-            elif event.key == pygame.K_RIGHT and snake_dir != (-CELL_SIZE, 0):
-                snake_dir = (CELL_SIZE, 0)
+        elif event.type == pg.KEYDOWN: # обрабатывает нажатия клавиш
+            if event.key == pg.K_UP and snake_dir != (0, cellsize):
+                snake_dir = (0, -cellsize)
+            elif event.key == pg.K_DOWN and snake_dir != (0, -cellsize):
+                snake_dir = (0, cellsize)
+            elif event.key == pg.K_LEFT and snake_dir != (cellsize, 0):
+                snake_dir = (-cellsize, 0)
+            elif event.key == pg.K_RIGHT and snake_dir != (-cellsize, 0):
+                snake_dir = (cellsize, 0)
     
-    # Move snake
-    new_head = (snake[0][0] + snake_dir[0], snake[0][1] + snake_dir[1])
+    new_head = (snake[0][0] + snake_dir[0], snake[0][1] + snake_dir[1]) # жыланның басына жаңа позиция береді
     
-    # Check for wall collision
-    if new_head[0] < 0 or new_head[0] >= WIDTH or new_head[1] < 0 or new_head[1] >= HEIGHT:
-        running = False  # Game over
+    if new_head[0] < 0 or new_head[0] >= width or new_head[1] < 0 or new_head[1] >= height: # егер жылан терезенің границасынан шығып кетсе
+        running = False # ойын аяқталады
     
-    # Check for self collision
-    if new_head in snake:
-        running = False  # Game over
+    if new_head in snake: # жыланның өзіне өзі тиіп кетпеуін тексереді
+        running = False 
     
-    # Add new head to the snake
-    snake.insert(0, new_head)
+    snake.insert(0, new_head) # сегменттарға 
     
-    # Check if food is eaten
-    if new_head == food:
-        score += 10
-        if score % 30 == 0:  # Increase level every 3 food items
-            level += 1
-            speed += 2  # Increase speed
+    if new_head == food: # жыланның тамақты жегенін тексереді
+        score += 10 # әр тамақ сайын счет 10 косады
+        if score % 30 == 0: # әр 3 тамақ сайын уровен көтереді
+            level += 1 # уровенге 1 уровен қосады
+            speed += 2 # жылдамдыққа +2 қосады
         food = generate_food()
     else:
-        snake.pop()  # Remove tail if no food eaten
+        snake.pop() # егер тамақты жемесе хвост алып тастайды
     
-    # Draw snake
-    for segment in snake:
-        pygame.draw.rect(screen, GREEN, (segment[0], segment[1], CELL_SIZE, CELL_SIZE))
+    for segment in snake: # жыланды жасыл квадраттармен бояды
+        pg.draw.rect(screen, green, (segment[0], segment[1], cellsize, cellsize))
     
-    # Draw food
-    pygame.draw.rect(screen, RED, (food[0], food[1], CELL_SIZE, CELL_SIZE))
+    pg.draw.rect(screen, red, (food[0], food[1], cellsize, cellsize)) # тамақты қызыл квадратпен бояды
     
-    # Display score and level
-    score_text = font.render(f"Score: {score}  Level: {level}", True, WHITE)
-    screen.blit(score_text, (10, 10))
+    score_text = font.render(f"Score: {score}  Level: {level}", True, white) # счетпен уровен сол жақ бұрышқа шығарады
+    screen.blit(score_text, (10, 10)) # счетпен уровен шығатын позициясы
     
-    pygame.display.flip()
-    clock.tick(speed)
+    pg.display.flip() # экранды жаңартып отырамыз
+    clock.tick(speed)  # ойын жылдамдығын регулировка жасайды
 
-pygame.quit()
+pg.quit()
 
