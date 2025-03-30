@@ -8,7 +8,6 @@ width, height = 600, 400  # Ойын терезесінің өлшемдері
 cellsize = 20  # Жылан мен тамақтың 1 өлшемі
 
 white, green, red, blue, black = (255, 255, 255), (0, 255, 0), (255, 0, 0), (0, 0, 255), (0, 0, 0)
-
 fps = 10  # Жыланның бастапқы жылдамдығы
 
 screen = pg.display.set_mode((width, height)) # Ойын терезесін құру
@@ -92,5 +91,3 @@ while running: # Ойын циклі
     clock.tick(speed)  # Ойынның жылдамдығын басқару
 
 pg.quit()  # Pygame-ді жабу
-
-
