@@ -89,5 +89,4 @@ while running: # Ойын циклі
     
     pg.display.flip()  # Экранды жаңарту
     clock.tick(speed)  # Ойынның жылдамдығын басқару
-
 pg.quit()  # Pygame-ді жабу

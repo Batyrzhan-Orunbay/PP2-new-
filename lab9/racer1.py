@@ -33,7 +33,7 @@ def drawtext(score):
     score_text = font.render(f"Score: {score}", True, "WHITE")  # Ұпайды экранға шығару
     screen.blit(score_text, (10, 10))  # Ұпай санын экранның жоғарғы сол жағына орналастыру
 
-class Player(pg.sprite.Sprite):  # Ойыншының класын анықтау
+class Player(pg.sprite.Sprite):  # Ойыншының класын анықтау, pygame.sprite.Group көмегімен объектілерді оңай басқаруға және оларды экранға шығаруды жеңілдетуге мүмкіндік береді.
     def __init__(self):
         super().__init__()
         self.image = player_img  # Ойыншының суреті
@@ -103,7 +103,7 @@ coin = Coin()
 all_sprites = pg.sprite.Group()  # Барлық объектілер тобы
 enemy_sprites = pg.sprite.Group()  # Қарсыластар тобы
 all_sprites.add(player, enemy)
-enemy_sprites.add(enemy)
+enemy_sprites.add(enemy) # Бұл топта тек қарсыластар сақталады.
 
 run = True
 while run:
@@ -121,24 +121,24 @@ while run:
 
     player.move()
     
-    for entity in all_sprites:
+    for entity in all_sprites: # all_sprites тобының әрбір элементіне (player, enemy) move() әдісін шақырады.
         entity.move()
         screen.blit(entity.image, entity.rect)
     
-    coin.move()
-    drawtext(coin.score)
+    coin.move() # Coin объектісін экранда жылжытып, қажет болса, жаңа тиын жасайды.
+    drawtext(coin.score) # Жинаған ұпайды экранға шығару.
     
     if coin.score % 5 == 0 and coin.score > 0:
         enemy.speed = 10 + coin.score // 5  # Жылдамдықты арттыру
     
-    if pg.sprite.spritecollideany(player, enemy_sprites):
-        sound_crash.play()
-        time.sleep(1)
+    if pg.sprite.spritecollideany(player, enemy_sprites): #Егер ойыншы (player) қарсылас көлігімен (enemy) соқтығысса, ойын аяқталады
+        sound_crash.play() # апат дыбысын шығарады.
+        time.sleep(1) #кішкене үзіліс жасайды.
         run = False
-        screen.fill("red")
-        screen.blit(game_over, game_over_rect)
+        screen.fill("red") # экранды қызыл түске бояп, ойын аяқталғанын көрсетеді.
+        screen.blit(game_over, game_over_rect) #"Game Over" мәтінін шығарады.
         pg.display.flip()
-        time.sleep(3)
+        time.sleep(3) # 3 секунд күтіп, ойыннан шығарады.
 
     pg.display.update()
     clock.tick(FPS)  # Кадр жылдамдығын сақтау
