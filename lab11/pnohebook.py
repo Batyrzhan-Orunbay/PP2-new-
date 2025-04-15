@@ -64,7 +64,7 @@ $$ LANGUAGE plpgsql;
 """
 
 
-conn = psg.connect(host="localhost", dbname="phonebook", user="postgres", password="Aa12340987.", port=5432)
+conn = psg.connect(host="localhost", dbname="postgres", user="postgres", password="21022012a", port=5432)
 
 cur = conn.cursor()
 
@@ -85,7 +85,7 @@ def search(pattern):
     for row in res:
         print(row)
 
-search("Nurasyl")
+search("Nursultan")
 
 
 #2 insert name and phone if name exists in table update phone
