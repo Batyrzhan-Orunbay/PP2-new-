@@ -123,7 +123,7 @@ def delete(name = None, phone = None):
     cur.execute("CALL delete_by(%s, %s)", (name, phone))
 
 
-delete(name="bek")
+delete(name="Madina")
 
 conn.commit()
 
