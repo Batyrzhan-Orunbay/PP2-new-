@@ -1,13 +1,12 @@
-import psycopg2 as psg  # PostgreSQL-пен жұмыс істеу үшін кітапхана
-import csv  # CSV файлмен жұмыс істеу үшін
+import psycopg2 as psg 
+import csv
 
-# Дерекқормен қосылу
 conn = psg.connect(
     host="localhost",dbname="postgres",user="postgres",password="21022012a",port=5432              )
 
-cur = conn.cursor()  # Сұраныс жіберу үшін курсор аламыз
+cur = conn.cursor() 
 
-# PhoneBook кестесін жасау (бар болса - жасамайды)
+# PhoneBook кестесін жасау
 cur.execute(""" 
     CREATE TABLE IF NOT EXISTS phonebook (
         id SERIAL PRIMARY KEY,           
