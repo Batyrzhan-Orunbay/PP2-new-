@@ -1,19 +1,25 @@
-import psycopg2 as psg
+import psycopg2 as psg  
 
 """"
-CREATE OR REPLACE FUNCTION search_by_pattern(pattern VARCHAR)
-RETURNS TABLE(id int, first_name VARCHAR, surname VARCHAR, phone VARCHAR) AS
-$$
+
+-- Іздеу функциясы: Берілген үлгі бойынша өрістерінен іздейді
+
+CREATE OR REPLACE FUNCTION search_phonebook(pattern VARCHAR)
+RETURNS TABLE(id INT, first_name VARCHAR, surname VARCHAR, phone VARCHAR)
+AS $$
 BEGIN
     RETURN QUERY
-    SELECT phonebook.id, phonebook.first_name, phonebook.surname, phonebook.phone
-    FROM phonebook
-    WHERE phonebook.first_name ILIKE '%' || pattern || '%'
-    OR phonebook.surname ILIKE '%' || pattern || '%'
-    OR phonebook.phone ILIKE '%' || pattern || '%';
+    SELECT * FROM phonebook
+    WHERE first_name ILIKE '%' || pattern || '%'
+       OR surname ILIKE '%' || pattern || '%'
+       OR phone ILIKE '%' || pattern || '%';
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+
+-- Аты бойынша телефон жаңарту немесе егер табылмаса жаңа қолданушы қосу процедурасы
 
 CREATE OR REPLACE PROCEDURE insert_element(name VARCHAR, new_phone VARCHAR) AS
 $$
@@ -27,6 +33,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+-- Тізімнен жаңа қолданушы қосатын процедура
+
 CREATE OR REPLACE PROCEDURE insert_lst(name VARCHAR, surname VARCHAR, phone VARCHAR) AS
 $$
 BEGIN 
@@ -35,6 +44,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+-- Пагинация (шектеу және ығыстыру арқылы) сұраныс функциясы
 
 CREATE OR REPLACE FUNCTION querys(a INT, b INT)
 RETURNS TABLE(id int, first_name VARCHAR, surname VARCHAR, phone VARCHAR) AS
@@ -48,6 +60,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+-- Аты бойынша өшіру, егер табылмаса телефон нөмірі бойынша өшіру процедурасы
+
 CREATE OR REPLACE PROCEDURE delete_by(name VARCHAR, userphone VARCHAR) AS
 $$
 BEGIN 
@@ -60,7 +76,6 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-
 """
 
 
@@ -68,64 +83,57 @@ conn = psg.connect(host="localhost", dbname="postgres", user="postgres", passwor
 
 cur = conn.cursor()
 
-# Create Table
+# Дерекқорда phonebook кестесі жоқ болса, оны құру
 cur.execute(""" CREATE TABLE IF NOT EXISTS phonebook (
-            id SERIAL PRIMARY KEY,
-            first_name VARCHAR(50) NOT NULL,
-            surname VARCHAR(50) NOT NULL,
-            phone VARCHAR(15) NOT NULL
+            id SERIAL PRIMARY KEY,                     -- Бірегей ID автоматты түрде өседі
+            first_name VARCHAR(50) NOT NULL,           -- Аты
+            surname VARCHAR(50) NOT NULL,              -- Тегі
+            phone VARCHAR(15) NOT NULL                 -- Телефон нөмірі
 );
 """)
 
-
-#1 search by pattern
-def search(pattern):
-    cur.callproc('search_by_pattern', (pattern,))
-    res = cur.fetchall()
-    for row in res:
-        print(row)
-
-search("Nursultan")
-
-
-#2 insert name and phone if name exists in table update phone
-def insert(name, new_phone):
-    cur.execute("CALL insert_element(%s, %s)", (name, new_phone,))
-
-insert('bew', '1234097532')
+# 1. Қолданушыдан ат пен телефон сұрау
+print("\n--- Insert or Update User ---")
+first_name = input("Enter first name: ")    # Қолданушыдан аты сұралады
+phone = input("Enter phone number: ")       # Қолданушыдан телефон сұралады
 
 
 
-#3 inserting from list with loop
+# 2. Егер ат бар болса, телефон жаңартылады, болмаса жаңа жазба қосылады
+cur.callproc("insert_element", (first_name, phone))
+conn.commit()  # Өзгерістерді сақтау
+print("User inserted or updated.")
+
+
+
+# 3. Тізімнен бірнеше қолданушыны қосу
 lst = [
     ["Alice", "Brown", "+1234567890"],
     ["Bob", "Smith", "+23582323457"],
     ["Eve", "White", "+2347867834"]
 ]
-
 for user in lst:
-    cur.execute("CALL insert_lst(%s, %s, %s)", (user[0], user[1], user[2]))
+    cur.callproc("insert_lst", (user[0], user[1], user[2]))  # Әр қолданушыны жеке қосу
+conn.commit()  # Өзгерістерді сақтау
 
 
 
-#4 Quering by limit and offset
-
+# 4. Пагинация функциясы — шектеу және ығыстыру бойынша мәліметтерді шығару
 def pagin(limit, offset):
-    cur.callproc('querys', (limit, offset))
-    rows = cur.fetchall()
+    cur.callproc('querys', (limit, offset))  # Функцияны шақыру
+    rows = cur.fetchall()  # Нәтижені алу
     for row in rows:
-        print(row)
+        print(row)  # Әр жолды шығару
+pagin(3, 3)  # Үш жазбаны 3-ші орыннан бастап шығару
 
-pagin(3, 3)
 
-#5 deleting from table
+
+# 5. Қолданушыны өшіру функциясы
 def delete(name = None, phone = None):
-    cur.execute("CALL delete_by(%s, %s)", (name, phone))
+    cur.execute("CALL delete_by(%s, %s)", (name, phone))  # delete_by процедурасын шақыру
+delete(name="Madina")  # "Madina" деген атты қолданушыны өшіру
+conn.commit()  # Өзгерістерді сақтау
 
 
-delete(name="Madina")
-
-conn.commit()
-
-cur.close()
-conn.close()
+cur.close()  # Курсорды жабу
+conn.close()  # Дерекқормен байланысты жабу
